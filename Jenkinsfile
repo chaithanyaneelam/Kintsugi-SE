@@ -22,12 +22,12 @@ pipeline {
             defaultValue: true,
             description: 'Push compiled Docker images to remote container registry'
         )
-        stringParam(
+        string(
             name: 'DOCKER_REGISTRY',
             defaultValue: 'docker.io/chaithanyaneelam',
             description: 'Docker Registry Username or Organization Namespace'
         )
-        choiceParam(
+        choice(
             name: 'DEPLOY_ENV',
             choices: ['staging', 'production', 'none'],
             description: 'Target Deployment Environment'
