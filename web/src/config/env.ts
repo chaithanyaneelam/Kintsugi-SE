@@ -25,10 +25,12 @@ const envSchema = z.object({
 const rawEnv = {
   VITE_API_BASE_URL:
     import.meta.env.VITE_API_BASE_URL ||
-    (import.meta.env.DEV ? 'http://localhost:8000/api/v1' : undefined),
+    (typeof window !== 'undefined' ? `${window.location.origin}/api/v1` : 'http://localhost:8000/api/v1'),
   VITE_WS_BASE_URL:
     import.meta.env.VITE_WS_BASE_URL ||
-    (import.meta.env.DEV ? 'ws://localhost:8000/ws' : undefined),
+    (typeof window !== 'undefined'
+      ? `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/api/v1/ws`
+      : 'ws://localhost:8000/api/v1/ws'),
 }
 
 const parsed = envSchema.safeParse(rawEnv)
