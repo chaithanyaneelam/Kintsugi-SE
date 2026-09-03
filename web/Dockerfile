@@ -29,7 +29,7 @@ EXPOSE 80
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget --quiet --tries=1 --spider http://localhost/ || exit 1
+    CMD wget -q -O - http://127.0.0.1/ > /dev/null || exit 1
 
 # Start Nginx in foreground
 CMD ["nginx", "-g", "daemon off;"]
