@@ -3,7 +3,7 @@ version: '3.8'
 services:
   db:
     image: mariadb:10.6
-    container_name: kintsugi-prod-db
+    container_name: kintsugi-db
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-kintsugi_prod_root_pass}
@@ -13,7 +13,7 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - kintsugi_prod_db_data:/var/lib/mysql
+      - kintsugi_db_data:/var/lib/mysql
       - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
@@ -23,7 +23,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: kintsugi-prod-redis
+    container_name: kintsugi-redis
     restart: always
     ports:
       - "6379:6379"
@@ -38,7 +38,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: kintsugi-prod-backend
+    container_name: kintsugi-backend
     restart: always
     ports:
       - "8000:8000"
@@ -59,7 +59,7 @@ services:
 
   celery-worker:
     image: ${REGISTRY_URL:-chaithanyaneelam}/kintsugi-backend:${IMAGE_TAG:-latest}
-    container_name: kintsugi-prod-celery-worker
+    container_name: kintsugi-celery-worker
     command: python -m celery -A app.workers.celery_worker.celery_app worker -Q kintsugi_default,ai,critical --loglevel=info
     restart: always
     environment:
@@ -78,7 +78,7 @@ services:
     build:
       context: ./web
       dockerfile: Dockerfile
-    container_name: kintsugi-prod-web
+    container_name: kintsugi-web
     restart: always
     ports:
       - "8085:80"
@@ -86,4 +86,4 @@ services:
       - backend
 
 volumes:
-  kintsugi_prod_db_data:
+  kintsugi_db_data:

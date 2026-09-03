@@ -13,6 +13,11 @@ RUN npm ci
 
 # Copy application source code and build production bundle
 COPY . .
+
+# Invalidate build cache for fresh builds
+ARG BUILD_NUMBER=1
+ENV BUILD_NUMBER=${BUILD_NUMBER}
+
 RUN npm run build
 
 # --- Stage 2: Production Nginx Server ---

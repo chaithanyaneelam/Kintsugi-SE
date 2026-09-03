@@ -54,9 +54,9 @@ pipeline {
         stage('Build Docker Images') {
             steps {
                 script {
-                    echo "Building Web & Backend Docker Images..."
-                    sh "docker build -t ${params.DOCKER_REGISTRY}/${env.DOCKER_BACKEND_NAME}:${env.IMAGE_TAG} -t ${params.DOCKER_REGISTRY}/${env.DOCKER_BACKEND_NAME}:latest ./backend"
-                    sh "docker build -t ${params.DOCKER_REGISTRY}/${env.DOCKER_WEB_NAME}:${env.IMAGE_TAG} -t ${params.DOCKER_REGISTRY}/${env.DOCKER_WEB_NAME}:latest ./web"
+                    echo "Building Web & Backend Docker Images (build-arg BUILD_NUMBER=${env.BUILD_NUMBER})..."
+                    sh "docker build --build-arg BUILD_NUMBER=${env.BUILD_NUMBER} -t ${params.DOCKER_REGISTRY}/${env.DOCKER_BACKEND_NAME}:${env.IMAGE_TAG} -t ${params.DOCKER_REGISTRY}/${env.DOCKER_BACKEND_NAME}:latest ./backend"
+                    sh "docker build --build-arg BUILD_NUMBER=${env.BUILD_NUMBER} -t ${params.DOCKER_REGISTRY}/${env.DOCKER_WEB_NAME}:${env.IMAGE_TAG} -t ${params.DOCKER_REGISTRY}/${env.DOCKER_WEB_NAME}:latest ./web"
                 }
             }
         }
