@@ -3,17 +3,17 @@ version: '3.8'
 services:
   db:
     image: mariadb:10.6
-    container_name: kintsugi-db
+    container_name: kintsugi-prod-db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: "kintsugi_root_secure"
-      MYSQL_DATABASE: "kintsugi_db"
-      MYSQL_USER: "kintsugi"
-      MYSQL_PASSWORD: "kintsugi_password"
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-kintsugi_prod_root_pass}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-kintsugi_db}
+      MYSQL_USER: ${MYSQL_USER:-kintsugi}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-kintsugi_prod_pass}
     ports:
       - "3306:3306"
     volumes:
-      - kintsugi_db_data:/var/lib/mysql
+      - kintsugi_prod_db_data:/var/lib/mysql
       - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
@@ -23,7 +23,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: kintsugi-redis
+    container_name: kintsugi-prod-redis
     restart: always
     ports:
       - "6379:6379"
@@ -34,20 +34,23 @@ services:
       retries: 5
 
   backend:
+    image: ${REGISTRY_URL:-chaithanyaneelam}/kintsugi-backend:${IMAGE_TAG:-latest}
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: kintsugi-backend
+    container_name: kintsugi-prod-backend
     restart: always
     ports:
       - "8000:8000"
     environment:
       - HOST=0.0.0.0
       - PORT=8000
-      - DATABASE_URL=mysql+pymysql://kintsugi:kintsugi_password@db:3306/kintsugi_db
+      - DATABASE_URL=mysql+pymysql://${MYSQL_USER:-kintsugi}:${MYSQL_PASSWORD:-kintsugi_prod_pass}@db:3306/${MYSQL_DATABASE:-kintsugi_db}
       - REDIS_URL=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - SECRET_KEY=${SECRET_KEY:-default_secret_key_change_in_prod}
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY:-}
     depends_on:
       db:
         condition: service_healthy
@@ -55,43 +58,32 @@ services:
         condition: service_healthy
 
   celery-worker:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: kintsugi-celery-worker
+    image: ${REGISTRY_URL:-chaithanyaneelam}/kintsugi-backend:${IMAGE_TAG:-latest}
+    container_name: kintsugi-prod-celery-worker
     command: python -m celery -A app.workers.celery_worker.celery_app worker -Q kintsugi_default,ai,critical --loglevel=info
     restart: always
     environment:
-      - DATABASE_URL=mysql+pymysql://kintsugi:kintsugi_password@db:3306/kintsugi_db
+      - DATABASE_URL=mysql+pymysql://${MYSQL_USER:-kintsugi}:${MYSQL_PASSWORD:-kintsugi_prod_pass}@db:3306/${MYSQL_DATABASE:-kintsugi_db}
       - REDIS_URL=redis://redis:6379/0
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - SECRET_KEY=${SECRET_KEY:-default_secret_key_change_in_prod}
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY:-}
     depends_on:
       backend:
         condition: service_started
 
   web:
+    image: ${REGISTRY_URL:-chaithanyaneelam}/kintsugi-web:${IMAGE_TAG:-latest}
     build:
       context: ./web
       dockerfile: Dockerfile
-    container_name: kintsugi-web
+    container_name: kintsugi-prod-web
     restart: always
     ports:
-      - "8080:80"
+      - "80:80"
     depends_on:
       - backend
 
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin:latest
-    container_name: kintsugi-phpmyadmin
-    restart: always
-    ports:
-      - "8081:80"
-    environment:
-      PMA_HOST: db
-      PMA_PORT: 3306
-    depends_on:
-      - db
-
 volumes:
-  kintsugi_db_data:
+  kintsugi_prod_db_data:
