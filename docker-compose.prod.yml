@@ -81,7 +81,7 @@ services:
     container_name: kintsugi-prod-web
     restart: always
     ports:
-      - "80:80"
+      - "8085:80"
     depends_on:
       - backend
 
