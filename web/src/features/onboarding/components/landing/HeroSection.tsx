@@ -47,7 +47,7 @@ export const HeroSection: React.FC = () => {
         transition={{ duration: 0.5, delay: 0.1 }}
       >
         <h1 className="text-3xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.1] font-serif">
-          AI Companion for Mental Wellness with peace,{' '}
+          AI Companion for Mental Wellness,{' '}
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-purple-600 to-amber-600 dark:from-violet-400 dark:via-purple-300 dark:to-[#F5D06F]">
             Reflection & Growth
           </span>
