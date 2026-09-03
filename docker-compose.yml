@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  db:
+    image: mariadb:10.6
+    container_name: kintsugi-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: "kintsugi_db"
+    ports:
+      - "3306:3306"
+    volumes:
+      - kintsugi_db_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: kintsugi-phpmyadmin
+    restart: always
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+    depends_on:
+      - db
+
+  xampp-web:
+    image: httpd:2.4-alpine
+    container_name: kintsugi-xampp-web
+    restart: always
+    ports:
+      - "8082:80"
+    volumes:
+      - ./htdocs:/usr/local/apache2/htdocs
+
+  redis:
+    image: redis:7-alpine
+    container_name: kintsugi-redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+volumes:
+  kintsugi_db_data:
